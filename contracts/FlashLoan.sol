@@ -37,7 +37,15 @@ contract FlashLoan {
         return _acquiredCoin > _amountToRepay;
     }
 
-    function placeTrade(address _fromToken, address _toToken, uint _amountIn) private returns (uint) {
+    function getBalanceOfToken(address _token) private view returns (uint) {
+        return IERC20(_token).balanceOf(address(this));
+    }
+
+    function placeTrade(
+        address _fromToken,
+        address _toToken,
+        uint _amountIn
+    ) private returns (uint) {
         address pair = IUniswapV2Factory(PANCAKE_FACTORY).getPair(
             _fromToken,
             _toToken
@@ -55,17 +63,18 @@ contract FlashLoan {
             path
         )[1];
 
-        uint amountReceived = IUniswapV2Router01(PANCAKE_ROUTER).swapExactTokensForTokens(
-            _amountIn,
-            amountRequired,
-            path,
-            address(this),
-            deadline
-        )[1];
+        uint amountReceived = IUniswapV2Router01(PANCAKE_ROUTER)
+            .swapExactTokensForTokens(
+                _amountIn,
+                amountRequired,
+                path,
+                address(this),
+                deadline
+            )[1];
 
         require(amountReceived > 0, "Transaction Abort: Error swapping tokens");
 
-        return amountReceived
+        return amountReceived;
     }
 
     function initiateArbitrage(address _BUSD_Borrow, uint _amount) external {
